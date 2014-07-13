@@ -1,7 +1,12 @@
 __author__ = 'Administrator'
 
-from dlTrans import DownloadTrans
+from stockInfoCrawler.Frameworks.dlTrans import DownloadTrans
+import stockInfoCrawler.Frameworks.Excel
 
-if __name__ == '__main__':
+
+def download_excel():
     dt = DownloadTrans()
     dt.download()
+
+if __name__ == '__main__':
+    pass

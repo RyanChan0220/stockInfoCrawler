@@ -8,7 +8,7 @@ from datetime import date
 import datetime
 
 
-class DownloadTrans():
+class DownloadTrans(object):
     def __init__(self):
         self.cf = ConfigParser.ConfigParser()
         self.cf.read("trans.conf")
@@ -37,9 +37,14 @@ class DownloadTrans():
                 else:
                     pass
                 d_start = d_start + datetime.timedelta(days=1)
+            file_dir = self.dst_dir + stock
+            if os.path.isdir(file_dir):
+                pass
+            else:
+                os.mkdir(file_dir)
             for day in days:
                 url = self.url_template + "date=%s&symbol=%s" % (day, stock)
-                filename = self.dst_dir + stock + '_' + day + '.xls'
+                filename = file_dir + '/' + day + '.xls'
                 urllib.urlretrieve(url, filename)
                 print "xls file write to %s" % filename
 
