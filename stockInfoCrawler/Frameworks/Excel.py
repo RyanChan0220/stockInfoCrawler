@@ -24,28 +24,28 @@ class Excel(object):
     def read_cell(self, row, col):
         return self.__sheet.cell(row, col).value
 
-    def read_block(self, begin_row, end_row, begin_col, end_col):
-        if begin_row >= end_row:
-            print "The number of row is wrong, from %d to %d" % (begin_row, end_row)
+    def read_block(self, begain_row, end_row, begain_col, end_col):
+        if begain_row >= end_row:
+            print "The number of row is wrong, from %d to %d" % (begain_row, end_row)
             return None
-        if begin_col >= end_col:
-            print "The number of col is wrong, from %d to %d" % (begin_col, end_col)
+        if begain_col >= end_col:
+            print "The number of col is wrong, from %d to %d" % (begain_col, end_col)
             return None
-        data = []
-        for row in range(begin_row, end_row):
-            data_row = []
-            for col in range(begin_col, end_col):
+        data = list()
+        for row in range(begain_row, end_row):
+            data_row = list()
+            for col in range(begain_col, end_col):
                 data_row.append(self.__sheet.cell(row, col).value)
             data.append(data_row)
         return data
 
-    def read_cols(self, begin_row, end_row, cols):
-        if begin_row >= end_row:
-            print "The number of row is wrong, from %d to %d" % (begin_row, end_row)
+    def read_cols(self, begain_row, end_row, cols):
+        if begain_row >= end_row:
+            print "The number of row is wrong, from %d to %d" % (begain_row, end_row)
             return None
-        data = []
-        for row in range(begin_row, end_row):
-            data_row = []
+        data = list()
+        for row in range(begain_row, end_row):
+            data_row = list()
             for col in cols:
                 data_row.append(self.__sheet.cell(row, col).value)
             data.append(data_row)
