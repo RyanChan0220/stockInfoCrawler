@@ -18,6 +18,12 @@ class Excel(object):
     def open_sheet_by_name(self, sheet_name):
         self.__sheet = self.__book.sheet_by_name(sheet_name)
 
+    def get_max_row(self):
+        return self.__sheet.nrows
+
+    def get_max_col(self):
+        return self.__sheet.ncols
+
     def open_sheet_by_index(self, sheet_index):
         self.__sheet = self.__book.sheet_by_index(sheet_index)
 

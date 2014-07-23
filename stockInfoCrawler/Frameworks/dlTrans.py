@@ -44,7 +44,7 @@ class DownloadTrans(object):
                 os.mkdir(file_dir)
             for day in days:
                 url = self.url_template + "date=%s&symbol=%s" % (day, stock)
-                filename = file_dir + '/' + day + '.xls'
+                filename = file_dir + '/' + day + '.txt'
                 urllib.urlretrieve(url, filename)
                 print "xls file write to %s" % filename
 
