@@ -27,7 +27,7 @@ class MySQL(object):
             col = ""
             for string in columns:
                 col += string + ", "
-            statement = "CREATE TABLE `" + self.__db_name + """`.`%s`(%sPRIMARY KEY(`%s`))""" \
+            statement = "CREATE TABLE IF NOT EXISTS`" + self.__db_name + """`.`%s`(%sPRIMARY KEY(`%s`))""" \
                         % (table_name, col, key)
             cur.execute(statement)
             cur.close()
