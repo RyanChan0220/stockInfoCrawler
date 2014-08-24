@@ -44,17 +44,45 @@ def write2db(db_name, trans_path):
                                     text = text_list[i].decode('gb2312').encode('utf-8')
                                     text_elem = text.split("\t")
                                     deal_time_str = file_name + ';' + text_elem[0].strip()
-                                    deal_time = datetime.strptime(deal_time_str, "%Y-%m-%d;%H:%M:%S")
-                                    deal_price = float(text_elem[1].strip())
-                                    deal_gap_str = text_elem[2].strip()
-                                    if deal_gap_str[len(deal_gap_str) - 1].isdigit():
-                                        deal_gap = float(deal_gap_str)
-                                    else:
-                                        deal_gap = 0
-                                    if deal_gap == deal_price:
-                                        deal_gap = 0
-                                    deal_lot = int(text_elem[3].strip())
-                                    deal_amount = int(text_elem[4].strip())
+                                    check_ret = check_data(text_elem)
+                                    if check_ret != 0:
+                                        print "###########" + str(check_ret)
+                                        if check_ret != 7:
+                                            print text_elem[check_ret - 1]
+                                        continue
+                                    try:
+                                        deal_time = datetime.strptime(deal_time_str, "%Y-%m-%d;%H:%M:%S")
+                                    except Exception, e:
+                                        print deal_time_str
+                                    try:
+                                        deal_price_str = text_elem[1].strip()
+                                        if deal_price_str.isdigit():
+                                            deal_price = float(deal_price_str)
+                                        else:
+                                            deal_price = 0
+
+                                        deal_gap_str = text_elem[2].strip()
+                                        if deal_gap_str[len(deal_gap_str) - 1].isdigit():
+                                            deal_gap = float(deal_gap_str)
+                                        else:
+                                            deal_gap = 0
+                                        if deal_gap == deal_price:
+                                            deal_gap = 0
+
+                                        deal_lot_str = text_elem[3].strip()
+                                        if deal_lot_str.isdigit():
+                                            deal_lot = float(deal_lot_str)
+                                        else:
+                                            deal_lot = 0
+
+                                        deal_amount_str = text_elem[4].strip()
+                                        if deal_lot_str.isdigit():
+                                            deal_amount = float(deal_amount_str)
+                                        else:
+                                            deal_amount = 0
+                                    except Exception, e:
+                                        print e
+
                                     deal_type_str = text_elem[5].strip()
                                     deal_type = 0
                                     if deal_type_str == "买盘":
@@ -63,16 +91,52 @@ def write2db(db_name, trans_path):
                                         deal_type = -1
                                     else:
                                         deal_type = 0
+                                    if i == 1:
+                                        ret = mysql.query(dir1, "DEAL_DATE", deal_time)
+                                        if len(ret) > 0:
+                                            print "pass this file!"
+                                            break
+                                        else:
+                                            pass
+                                    else:
+                                        pass
                                     data.append([deal_time, deal_price, deal_gap, deal_lot, deal_amount, deal_type])
-                            mysql.insert_many(dir1, "`DEAL_DATE`, `DEAL_PRICE`, `DEAL_GAP`, \
-                            `TOTAL_LOT`, `TOTAL_AMOUNT`, `DEAL_TYPE`", data)
+                            if len(data) > 0:
+                                mysql.insert_many(dir1, "`DEAL_DATE`, `DEAL_PRICE`, `DEAL_GAP`, \
+                                    `TOTAL_LOT`, `TOTAL_AMOUNT`, `DEAL_TYPE`", data)
+                            else:
+                                pass
                         else:
                             continue
     except IOError, e:
         print "ERROR: " + dir1 + " FILE: " + file2
+        mysql.close_connect()
     mysql.close_connect()
+
+
+def check_data(data):
+    if len(data) == 6:
+        if len(data[0]) > 10:
+            ret = 1
+        elif len(data[1]) > 10:
+            ret = 2
+        elif len(data[2]) > 10:
+            ret = 3
+        elif len(data[3]) > 20:
+            ret = 4
+        elif len(data[4]) > 20:
+            ret = 5
+        elif len(data[5]) > 10:
+            ret = 6
+        else:
+            ret = 0
+    else:
+        ret = 7
+    return ret
+
+
 
 
 if __name__ == '__main__':
     # download_excel()
-    write2db("trans", "D:\\txt")
+    write2db("trans", "D:\\StockData\\trans")

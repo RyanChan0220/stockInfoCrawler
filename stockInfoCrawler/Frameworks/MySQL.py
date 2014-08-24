@@ -50,23 +50,18 @@ class MySQL(object):
             cur.execute(statement)
             cur.close()
 
-    def query(self, table, column, value):
+    def query(self, table, column, value=None):
         with self.__con:
             cur = self.__con.cursor()
-            statement = """SELECT * FROM %s where %s = %s""" % (table, column, value)
+            if value == None:
+                statement = """SELECT %s FROM %s""" % (column, table)
+            else:
+                statement = """SELECT * FROM %s.%s WHERE %s = '%s'""" % (self.__db_name, table, column, value)
             cur.execute(statement)
             data = cur.fetchall()
             cur.close()
             return data
 
-    def query(self, table, column):
-        with self.__con:
-            cur = self.__con.cursor()
-            statement = """SELECT %s FROM %s""" % (column, table)
-            cur.execute(statement)
-            data = cur.fetchall()
-            cur.close()
-            return data
 
 
 
