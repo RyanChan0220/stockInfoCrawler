@@ -4,7 +4,9 @@ __author__ = 'Administrator'
 from stockInfoCrawler.Frameworks.dlTrans import DownloadTrans
 from stockInfoCrawler.Frameworks.MySQL import MySQL
 from stockInfoCrawler.Frameworks.Excel import Excel
+from stockInfoCrawler.analysis import Analyzer
 from datetime import datetime
+
 import os
 from os.path import join
 
@@ -50,38 +52,35 @@ def write2db(db_name, trans_path):
                                         if check_ret != 7:
                                             print text_elem[check_ret - 1]
                                         continue
+                                    deal_time = datetime.strptime('1900-01-01;00:00:00', "%Y-%m-%d;%H:%M:%S")
                                     try:
                                         deal_time = datetime.strptime(deal_time_str, "%Y-%m-%d;%H:%M:%S")
-                                    except Exception, e:
+                                    except Exception:
                                         print deal_time_str
+                                    #deal nums
+                                    deal_price = 0
+                                    deal_gap = 0
+                                    deal_lot = 0
+                                    deal_amount = 0
                                     try:
                                         deal_price_str = text_elem[1].strip()
-                                        if deal_price_str.isdigit():
-                                            deal_price = float(deal_price_str)
-                                        else:
-                                            deal_price = 0
-
                                         deal_gap_str = text_elem[2].strip()
-                                        if deal_gap_str[len(deal_gap_str) - 1].isdigit():
+                                        deal_lot_str = text_elem[3].strip()
+                                        deal_amount_str = text_elem[4].strip()
+
+                                        deal_price = float(deal_price_str)
+                                        if deal_gap_str.find('-') == -1:
                                             deal_gap = float(deal_gap_str)
                                         else:
                                             deal_gap = 0
-                                        if deal_gap == deal_price:
-                                            deal_gap = 0
-
-                                        deal_lot_str = text_elem[3].strip()
-                                        if deal_lot_str.isdigit():
-                                            deal_lot = float(deal_lot_str)
-                                        else:
-                                            deal_lot = 0
-
-                                        deal_amount_str = text_elem[4].strip()
-                                        if deal_lot_str.isdigit():
-                                            deal_amount = float(deal_amount_str)
-                                        else:
-                                            deal_amount = 0
+                                        deal_lot = float(deal_lot_str)
+                                        deal_amount = float(deal_amount_str)
                                     except Exception, e:
                                         print e
+                                        print deal_price_str
+                                        print deal_gap_str
+                                        print deal_lot
+                                        print deal_amount
 
                                     deal_type_str = text_elem[5].strip()
                                     deal_type = 0
@@ -91,6 +90,7 @@ def write2db(db_name, trans_path):
                                         deal_type = -1
                                     else:
                                         deal_type = 0
+
                                     if i == 1:
                                         ret = mysql.query(dir1, "DEAL_DATE", deal_time)
                                         if len(ret) > 0:
@@ -106,8 +106,11 @@ def write2db(db_name, trans_path):
                                     `TOTAL_LOT`, `TOTAL_AMOUNT`, `DEAL_TYPE`", data)
                             else:
                                 pass
+                            fp.close()
+                            os.remove(file_path)
                         else:
                             continue
+                os.rmdir(next_dir)
     except IOError, e:
         print "ERROR: " + dir1 + " FILE: " + file2
         mysql.close_connect()
@@ -135,8 +138,10 @@ def check_data(data):
     return ret
 
 
-
-
 if __name__ == '__main__':
     # download_excel()
-    write2db("trans", "D:\\StockData\\trans")
+    # write2db("trans", "D:\\StockData\\trans")
+    analyzer = Analyzer()
+    analyzer.run()
+
+
