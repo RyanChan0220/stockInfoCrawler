@@ -4,7 +4,7 @@ import ConfigParser
 
 if __name__ == '__main__':
     path = "C:\\new_gdzq_v6\\T0002\\export"
-    start_date = '2012-01-01'
+    start_date = '2014-01-01'
     end_date = '2014-07-24'
     cf = ConfigParser.RawConfigParser()
     file_list = []

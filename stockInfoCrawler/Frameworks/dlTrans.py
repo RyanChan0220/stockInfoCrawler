@@ -3,8 +3,6 @@ __author__ = 'Administrator'
 import ConfigParser
 import urllib
 import os
-import time
-from datetime import date
 import datetime
 
 

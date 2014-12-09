@@ -7,17 +7,66 @@ import matplotlib.pyplot as plt
 
 
 class Analyzer(object):
-    def run(self):
-        start_date = datetime.strptime('2012-09-26;00:00:00', "%Y-%m-%d;%H:%M:%S")
-        end_date = datetime.strptime('2014-09-26;23:59:59', "%Y-%m-%d;%H:%M:%S")
-        stock_name = 'sz002410'
-        fig = plt.figure()
-        ax = fig.gca()
-        # self.analysis_deal_price(stock_name, start_date, end_date, ax, 'r')
-        self.analysis_close_price(stock_name, start_date, end_date, ax, 'b')
-        plt.show()
+    stock_name = "xx000000"
 
-    def analysis_close_price(self, stock_name, start_date, end_date, ax, color):
+    def __init__(self, stock_name):
+        self.stock_name = stock_name
+
+    def run(self):
+        start_date = datetime.strptime('2014-01-01;00:00:00', "%Y-%m-%d;%H:%M:%S")
+        end_date = datetime.strptime('2014-12-05;23:59:59', "%Y-%m-%d;%H:%M:%S")
+        # self.analysis_deal_price(stock_name, start_date, end_date, plt, 'r')
+        self.analysis_close_price(self.stock_name, start_date, end_date, plt, 'b')
+        # self.analy_big_trans(self.stock_name, 100000, start_date, end_date, plt, 'r')
+        self.analy_deal_type(self.stock_name, start_date, end_date, plt, 'r')
+        # plt.show()
+        
+
+    def analy_deal_type(self, stock_name, start_date, end_date, plt, color):
+        delta_days = (end_date - start_date).days
+        mysql = MySQL('trans')
+        mysql.connect()
+        for day in xrange(0, delta_days, 1):
+            today = start_date + timedelta(days=day)
+            next_day = start_date + timedelta(days=day+1)
+            state_where_buy = "DEAL_DATE > '%s' and DEAL_DATE < '%s' and DEAL_TYPE = 1" % (today, next_day)
+            buy_data = mysql.query_where(stock_name, state_where_buy)
+            cnt_buy_data = len(buy_data)
+            state_where_sell = "DEAL_DATE > '%s' and DEAL_DATE < '%s' and DEAL_TYPE = -1" % (today, next_day)
+            sell_data = mysql.query_where(stock_name, state_where_sell)
+            cnt_sell_data = len(sell_data)
+            scale = 5
+            if cnt_sell_data is not 0:
+                perc = (float(cnt_buy_data) / cnt_sell_data) * scale
+            else:
+                perc = 0
+            plt.scatter(today, perc, c=color)
+        plt.axhline(y=scale, xmin=0, xmax=1)
+        plt.savefig(self.stock_name+".png", dpi=200)
+        mysql.close_connect()
+
+    def analy_big_trans(self, stock_name, gate_money, start_date, end_date, plt, color):
+        delta_days = (end_date - start_date).days
+        mysql = MySQL('trans')
+        mysql.connect()
+        for day in xrange(0, delta_days, 1):
+            today = start_date + timedelta(days=day)
+            next_day = start_date + timedelta(days=day+1)
+            state_where = "DEAL_DATE > '%s' and DEAL_DATE < '%s' and TOTAL_AMOUNT > %d" % (today, next_day, gate_money)
+            big_data = mysql.query_where(stock_name, state_where)
+            state_where = "DEAL_DATE > '%s' and DEAL_DATE < '%s'" % (today, next_day)
+            all_data = mysql.query_where(stock_name, state_where)
+            cnt_big_data = len(big_data)
+            cnt_all_data = len(all_data)
+            if cnt_all_data is not 0:
+                perc = (float(cnt_big_data) / cnt_all_data) * 100
+            else:
+                perc = 0
+            plt.scatter(today, perc, c=color)
+        mysql.close_connect()
+
+
+    def analysis_close_price(self, stock_name, start_date, end_date, plt, color):
         one_day = timedelta(days=1)
         delta_days = (end_date - start_date).days
         mysql = MySQL('daily')
@@ -27,12 +76,12 @@ class Analyzer(object):
             state_where = "DATE = '%s'" % query_day
             data = mysql.query_where(stock_name, state_where)
             if len(data) > 0:
-                ax.scatter(query_day, data[0][5], c=color)
+                plt.scatter(query_day, data[0][5], c=color)
             else:
-                ax.scatter(query_day, 0, c=color)
+                plt.scatter(query_day, 0, c=color)
         mysql.close_connect()
 
-    def analysis_deal_price(self, stock_name, start_date, end_date, ax, color):
+    def analysis_deal_price(self, stock_name, start_date, end_date, plt, color):
         one_day = timedelta(days=1)
         delta_days = (end_date - start_date).days
         mysql = MySQL('trans')
@@ -43,7 +92,7 @@ class Analyzer(object):
             data = mysql.query_where(stock_name, state_where)
             ret = self.max_data(data)
             # ax.scatter(query_day, ret, c=color)
-            ax.plot(query_day, ret, 'o-', c=color)
+            plt.plot(query_day, ret, 'o-', c=color)
         mysql.close_connect()
 
     def show_data(self, data):

@@ -21,58 +21,68 @@ class MySQL(object):
     def close_connect(self):
         self.__con.close()
 
-    def create_table(self, table_name, key, columns):
+    def execute_statement(self, statement):
         with self.__con:
             cur = self.__con.cursor()
-            col = ""
-            for string in columns:
-                col += string + ", "
-            statement = "CREATE TABLE IF NOT EXISTS`" + self.__db_name + """`.`%s`(%sPRIMARY KEY(`%s`))""" \
-                        % (table_name, col, key)
             cur.execute(statement)
             cur.close()
 
-    def insert_many(self, table, columns, values):
+    def execute_statement_with_ret(self, statement):
+        data = None
         with self.__con:
             cur = self.__con.cursor()
-            col_length = len(columns.split(','))
-            columns_num = "%s" + ", %s"*(col_length - 1)
-            statement = """INSERT INTO %s(%s) VALUES(%s)""" % (table, columns, columns_num)
-            #print statement
+            cur.execute(statement)
+            data = cur.fetchall()
+            cur.close()
+        return data
+
+    def execute_statement_many(self, statement, values):
+        with self.__con:
+            cur = self.__con.cursor()
             cur.executemany(statement, values)
             self.__con.commit()
             cur.close()
 
+    def query_all_tables(self):
+        statement = "SHOW tables"
+        return self.execute_statement_with_ret(statement)
+
+    def create_table_with_delete(self, table_name, key, columns):
+        statement = "DROP TABLE IF EXISTS `%s`" % table_name
+        self.execute_statement(statement)
+        self.create_table(table_name, key, columns)
+
+    def create_table(self, table_name, key, columns):
+        col = ""
+        for string in columns:
+            col += string + ", "
+        statement = "CREATE TABLE IF NOT EXISTS`" + self.__db_name + """`.`%s`(%sPRIMARY KEY(`%s`))""" \
+                                                                     % (table_name, col, key)
+        self.execute_statement(statement)
+
+    def insert_many(self, table, columns, values):
+        col_length = len(columns.split(','))
+        columns_num = "%s" + ", %s" * (col_length - 1)
+        statement = """INSERT INTO %s(%s) VALUES(%s)""" % (table, columns, columns_num)
+        self.execute_statement_many(statement, values)
+
     def insert(self, table, column, value):
-        with self.__con:
-            cur = self.__con.cursor()
-            statement = """INSERT INTO %s(%s) VALUES(%s)""" % (table, column, value)
-            cur.execute(statement)
-            cur.close()
+        statement = """INSERT INTO %s(%s) VALUES(%s)""" % (table, column, value)
+        self.execute_statement(statement)
 
     def query(self, table, column, value=None):
-        with self.__con:
-            cur = self.__con.cursor()
-            if value is None:
-                statement = """SELECT %s FROM %s""" % (column, table)
-            else:
-                statement = """SELECT * FROM %s.%s WHERE %s = '%s'""" % (self.__db_name, table, column, value)
-            cur.execute(statement)
-            data = cur.fetchall()
-            cur.close()
-            return data
+        if value is None:
+            statement = """SELECT %s FROM %s""" % (column, table)
+        else:
+            statement = """SELECT * FROM %s.%s WHERE %s = '%s'""" % (self.__db_name, table, column, value)
+        return self.execute_statement_with_ret(statement)
 
     def query_where(self, table, where=None):
-        with self.__con:
-            cur = self.__con.cursor()
-            if where is None:
-                statement = """SELECT * FROM %s""" % table
-            else:
-                statement = """SELECT * FROM %s.%s WHERE %s""" % (self.__db_name, table, where)
-            cur.execute(statement)
-            data = cur.fetchall()
-            cur.close()
-            return data
+        if where is None:
+            statement = """SELECT * FROM %s""" % table
+        else:
+            statement = """SELECT * FROM %s.%s WHERE %s""" % (self.__db_name, table, where)
+        return self.execute_statement_with_ret(statement)
 
 
 
