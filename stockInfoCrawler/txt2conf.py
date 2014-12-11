@@ -5,7 +5,7 @@ import ConfigParser
 if __name__ == '__main__':
     path = "C:\\new_gdzq_v6\\T0002\\export"
     start_date = '2014-01-01'
-    end_date = '2014-07-24'
+    end_date = '2014-12-11'
     cf = ConfigParser.RawConfigParser()
     file_list = []
     for root1, dirs1, files1 in os.walk(path):

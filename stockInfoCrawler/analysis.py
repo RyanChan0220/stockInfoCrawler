@@ -4,6 +4,7 @@ from datetime import datetime
 from datetime import timedelta
 from stockInfoCrawler.Frameworks.MySQL import MySQL
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 class Analyzer(object):
@@ -14,12 +15,13 @@ class Analyzer(object):
 
     def run(self):
         start_date = datetime.strptime('2014-01-01;00:00:00', "%Y-%m-%d;%H:%M:%S")
-        end_date = datetime.strptime('2014-12-05;23:59:59', "%Y-%m-%d;%H:%M:%S")
+        end_date = datetime.strptime('2014-12-10;23:59:59', "%Y-%m-%d;%H:%M:%S")
         # self.analysis_deal_price(stock_name, start_date, end_date, plt, 'r')
         self.analysis_close_price(self.stock_name, start_date, end_date, plt, 'b')
         # self.analy_big_trans(self.stock_name, 100000, start_date, end_date, plt, 'r')
         self.analy_deal_type(self.stock_name, start_date, end_date, plt, 'r')
         # plt.show()
+        plt.clf()
         
 
     def analy_deal_type(self, stock_name, start_date, end_date, plt, color):
@@ -37,12 +39,21 @@ class Analyzer(object):
             cnt_sell_data = len(sell_data)
             scale = 5
             if cnt_sell_data is not 0:
-                perc = (float(cnt_buy_data) / cnt_sell_data) * scale
+                if cnt_buy_data is not 0:
+                    buy_total = self.sum_long(buy_data)
+                else:
+                    buy_total = 0
+                sell_total = self.sum_long(sell_data)
+                perc = (float(buy_total) / sell_total) * scale
+                # perc = (float(cnt_buy_data) / cnt_sell_data) * scale
             else:
                 perc = 0
             plt.scatter(today, perc, c=color)
         plt.axhline(y=scale, xmin=0, xmax=1)
-        plt.savefig(self.stock_name+".png", dpi=200)
+        try:
+            plt.savefig(".\\results\\"+self.stock_name+".png", dpi=200)
+        except Exception:
+            print "save png file error!"
         mysql.close_connect()
 
     def analy_big_trans(self, stock_name, gate_money, start_date, end_date, plt, color):
@@ -139,3 +150,9 @@ class Analyzer(object):
         else:
             max_price = 0
         return max_price
+
+    def sum_long(self, array):
+        ret = 0
+        for num in array:
+            ret += num[5]
+        return ret

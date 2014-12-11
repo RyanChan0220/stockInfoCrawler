@@ -15,6 +15,7 @@ def daily2DB(src, db_name):
             if file_name.find('.txt') == -1:
                 continue
             else:
+                print "Processing daily to DB File: %s" % file_name
                 table_name = file_name.split('.')[0]
                 tables.append(table_name)
                 full_file_name = join(root, file_name)
@@ -53,7 +54,7 @@ def daily2DB(src, db_name):
                 mysql.close_connect()
 
 
-def write2db(db_name, trans_path):
+def trans2db(db_name, trans_path):
     mysql = MySQL(db_name)
     mysql.connect()
     col_type = list()
@@ -78,7 +79,7 @@ def write2db(db_name, trans_path):
                             file_name = file2.split(".")[0]
                             with open(file_path, 'r') as fp:
                                 text_list = fp.readlines()
-                                print "Processing.... " + file_path
+                                print "Processing file to DB.... " + file_path
                                 for i in range(1, len(text_list)):
                                     text = text_list[i].decode('gb2312').encode('utf-8')
                                     text_elem = text.split("\t")

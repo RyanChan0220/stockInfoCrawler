@@ -17,13 +17,14 @@ def analyzer_all():
     tables = mysql.query_all_tables()
     for table in tables:
         analyzer = Analyzer(table[0])
+        print "starting analyzing %s" % table[0]
         analyzer.run()
 
 
 if __name__ == '__main__':
     daily2DB("C:\\new_gdzq_v6\\T0002\\export", "daily")
     download_excel()
-    write2db("trans", "D:\\StockData\\trans")
+    trans2db("trans", "D:\\StockData\\trans")
     analyzer_all()
 
 
